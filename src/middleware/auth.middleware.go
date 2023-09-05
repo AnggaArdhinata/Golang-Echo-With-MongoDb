@@ -14,20 +14,20 @@ func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 
 		clientToken := c.Request().Header.Get("authorization")
 		if clientToken == "" {
-			return c.JSON(401, responses.UserResponse{Status: 401, Message: "unautorized"})
+			return c.JSON(401, responses.UserResponse{Status: 401, Message: "unauthorized", Data: &echo.Map{"data": "you must login first !"}})
 		}
 		if !strings.Contains(clientToken, "Bearer") {
-			return c.JSON(500, responses.UserResponse{Status: 500, Message: "ivalid header type"})
+			return c.JSON(500, responses.UserResponse{Status: 500, Message: "error", Data: &echo.Map{"data": "ivalid header type !"}})
 		}
 
 		tokens := strings.Replace(clientToken, "Bearer ", "", -1)
 
 		checkToken, err := libs.ChekToken(tokens)
 		if err != nil {
-			return c.JSON(401, responses.UserResponse{Status: 401, Message: "unautorized"})
+			return c.JSON(401, responses.UserResponse{Status: 401, Message: "unauthorized", Data: &echo.Map{"data": "unauthorized"}})
 		}
 		if !checkToken.IsAdmin {
-			return c.JSON(401, responses.UserResponse{Status: 401, Message: "you haven't access to this feature!"})
+			return c.JSON(401, responses.UserResponse{Status: 401, Message: "unauthorized", Data: &echo.Map{"data": "you haven't access to this feature!"}})
 		}
 		fmt.Println("Auth middleware pass")
 
