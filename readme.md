@@ -1,7 +1,10 @@
 # Simple Golang API with Echo & MongoDb
 
-<img src="./assets/go-logo.jpg" alt="Logo" height="350">
-<img src="./assets/mongo-logo.gif" alt="Logo" height="350">
+<hr/>
+<div align="center">
+  <img src="./assets/go-logo.jpg" alt="Logo" height="150"> <img src="./assets/mongo-logo.gif" alt="Logo" height="150">
+</div>
+<br/>
 
 Hello, welcome to my repository.
 This is backend golang app, Build with Echo framework and mongodb.
@@ -12,8 +15,8 @@ This is backend golang app, Build with Echo framework and mongodb.
 - Autentification & Authorization
 - CRUD
 
-## 🔥 Showcase
-- [Postman Docs](https://documenter.getpostman.com/view/20559835/2s9YBxZvrs)
+## 🔥 POSTMAN DOCS
+- [Click Here !](https://documenter.getpostman.com/view/20559835/2s9YBxZvrs)
 
 
 ## 🛠️ Installation Steps
