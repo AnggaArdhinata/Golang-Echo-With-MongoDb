@@ -7,16 +7,26 @@ import (
 )
 
 func Route() *echo.Echo {
-	
+
 	e := echo.New()
 
-	e.POST("/user/register", controllers.CreateUser)
-	e.GET("/user/query", controllers.GetAUser)
-	e.PUT("/user/:userId", controllers.EditAUser)
-	e.DELETE("/user/:userId", middleware.Auth(controllers.DeleteAUser))
-	e.GET("/user", controllers.GetAllUsers)
+	api := e.Group("api/v1")
 
-	e.POST("/auth/login", controllers.Login)
+	api.GET("", func(c echo.Context) error {
+		return c.String(200, "Welcome to Golang Back-End APP")
+
+	})
+
+	api.GET("/user", controllers.GetAllUsers)              // get all user
+	api.POST("/user/register", controllers.CreateUser)     // create user/ register
+	api.PUT("/user/update/:userId", controllers.EditAUser) // update user
+
+	//apply middleware
+	api.GET("/user/query", middleware.Auth(controllers.GetAUser))                // get user by id
+	api.DELETE("/user/delete/:userId", middleware.Auth(controllers.DeleteAUser)) // delete by user id
+
+	//login path
+	api.POST("/auth/login", controllers.Login)
 
 	return e
 }

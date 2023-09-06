@@ -12,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-
 func Login(c echo.Context) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -35,7 +34,7 @@ func Login(c echo.Context) error {
 	if !passwordIsValid {
 		return c.JSON(500, responses.UserResponse{Status: 500, Message: "InternalServerError", Data: &echo.Map{"message": "wrong email or password !"}})
 	}
-	
+
 	jwt := libs.NewToken(user.Id, user.IsAdmin)
 	token, err := jwt.Create()
 	if err != nil {

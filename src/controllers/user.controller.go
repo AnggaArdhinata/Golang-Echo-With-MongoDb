@@ -34,19 +34,29 @@ func CreateUser(c echo.Context) error {
 	}
 
 	newUser := models.User{
-		Id:        primitive.NewObjectID(),
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Password:  user.Password,
-		IsAdmin:   user.IsAdmin,
+		Id:         primitive.NewObjectID(),
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		Email:      user.Email,
+		Password:   user.Password,
+		IsAdmin:    user.IsAdmin,
+		Created_At: user.Created_At,
+		Updated_At: user.Updated_At,
+	}
+
+	if chkEmail := userCollection.FindOne(ctx, bson.M{"email": newUser.Email}).Decode(&newUser); chkEmail == nil {
+		return c.JSON(500, responses.UserResponse{Status: 500, Message: "error", Data: &echo.Map{"users": "email already exist !"}})
 	}
 
 	hashPass, err := libs.HashPassword(newUser.Password)
 	if err != nil {
 		return c.JSON(500, responses.UserResponse{Status: 500, Message: "error", Data: &echo.Map{"users": err}})
 	}
+
 	newUser.Password = hashPass
+	newUser.Created_At = primitive.NewDateTimeFromTime(time.Now())
+	newUser.Updated_At = primitive.NewDateTimeFromTime(time.Now())
+
 	result, err := userCollection.InsertOne(ctx, newUser)
 	if err != nil {
 		return c.JSON(500, responses.UserResponse{Status: 500, Message: "error", Data: &echo.Map{"users": err.Error()}})
@@ -75,6 +85,7 @@ func EditAUser(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	userId := c.Param("userId")
 	var user models.User
+	var userFound models.User
 	defer cancel()
 
 	objId, _ := primitive.ObjectIDFromHex(userId)
@@ -89,7 +100,19 @@ func EditAUser(c echo.Context) error {
 		return c.JSON(400, responses.UserResponse{Status: 400, Message: "bad request", Data: &echo.Map{"users": validationErr.Error()}})
 	}
 
-	update := bson.M{"first_name": user.FirstName, "last_name": user.LastName, "email": user.Email, "password": user.Password}
+	if idCheck := userCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&userFound); idCheck != nil {
+		return c.JSON(404, responses.UserResponse{Status: 404, Message: "not found", Data: &echo.Map{"users": "id does not exist !"}})
+	}
+
+	hashPass, err := libs.HashPassword(user.Password)
+	if err != nil {
+		return c.JSON(500, responses.UserResponse{Status: 500, Message: "error", Data: &echo.Map{"users": err}})
+	}
+
+	user.Password = hashPass
+	user.Updated_At = primitive.NewDateTimeFromTime(time.Now())
+
+	update := bson.M{"firstname": user.FirstName, "lastname": user.LastName, "email": user.Email, "password": user.Password, "isadmin": user.IsAdmin, "updated_at": user.Updated_At}
 	result, err := userCollection.UpdateOne(ctx, bson.M{"id": objId}, bson.M{"$set": update})
 	if err != nil {
 		return c.JSON(500, responses.UserResponse{Status: 500, Message: "bad request", Data: &echo.Map{"users": err.Error()}})
@@ -146,6 +169,10 @@ func GetAllUsers(c echo.Context) error {
 		}
 		singleUser.Password = "scrett!"
 		users = append(users, singleUser)
+	}
+
+	if users == nil {
+		return c.JSON(404, responses.UserResponse{Status: 404, Message: "not found", Data: &echo.Map{"msg": "data not found !"}})
 	}
 
 	return c.JSON(200, responses.UserResponse{Status: 200, Message: "success", Data: &echo.Map{"users": users}})
